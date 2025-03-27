@@ -87,40 +87,7 @@ class Formatter:
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
 <style>
-	body {
-		background-color: #9966FF;
-	}
-	main {
-		color: #fff;
-	}
-	table {
-	    white-space: nowrap;
-	    border-collapse: collapse;
-	    margin: 0 auto;
-	}
-	td, th {
-	    padding: 5px;
-	    border: 1px solid #fff;
-	}
-	th {
-	position: sticky;
-    background-color: #9966FF;
-    top: 0px;
-	}
-    .popup {
-    white-space: nowrap;
-		position: fixed;
-		top: 50px;
-		right: 25px;
-		transform: translate(-50%, -50%);
-		background-color: #33CCCC;
-		color: #fff;
-		padding: 10px 20px;
-		border-radius: 5px;
-		display: none;
-		z-index: 1;
-		font-size: 20px;
-	}
+td,th{border:1px solid #e6c200}.popup,table{white-space:nowrap}.popup,body,main{color:#fff}body{background-color:#1e1e2f}table{margin:0 auto;border-collapse:collapse;box-shadow:0 0 10px #e6c200}th{position:sticky;top:0;background-color:#e6c200;color:#1e1e2f;padding:5px;cursor:pointer}td{padding:10px;text-align:center}tr:nth-child(2n){background-color:#2a2a3b}tr:nth-child(odd){background-color:#3a3a4f}tr:hover{background-color:#55557a}.popup{position:fixed;top:50px;right:25px;transform:translate(-50%,-50%);background-color:#3cc;padding:10px 20px;border-radius:5px;display:none;z-index:1;font-size:20px}
 </style>
 </head>
 <body>
