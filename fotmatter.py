@@ -71,7 +71,7 @@ class Formatter:
         return f"{self.filename}.xlsx"
 
     def to_html_table(self) -> str:  # path to file
-        table_headers = '\n'.join([f"<th>{el}</th>" for el in self.headers])
+        table_headers = '\n'.join([f'<th onclick="sortTable({i})">{el}</th>' for i,el in enumerate(self.headers)])
         table_rows = ""
         for row in self.rows:
             table_row = ""
@@ -125,15 +125,40 @@ class Formatter:
 </head>
 <body>
 	<main>
-		<table>
-		  <tr>
-            """ + table_headers + """
-		  </tr>
-            """ + table_rows + """
+		<table id="sortableTable">
+			<thead>
+				  <tr>
+		            """ + table_headers + """
+				  </tr>
+			</thead>
+			<tbody>
+            	""" + table_rows + """
+            </tbody>
 		</table>
 	</main>	
 	<div class="popup" id="popup">Текст скопирован</div>
 <script>
+    let sortDirection = {};
+    function sortTable(colIndex) {
+        const table = document.getElementById("sortableTable");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.rows);
+        
+        const isAscending = sortDirection[colIndex] = !sortDirection[colIndex];
+        
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.cells[colIndex].innerText.trim();
+            let cellB = rowB.cells[colIndex].innerText.trim();
+            
+            if (!isNaN(cellA) && !isNaN(cellB)) {
+                return isAscending ? cellA - cellB : cellB - cellA;
+            }
+            return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+        });
+        
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
 	const popup = document.getElementById("popup");
 
 	document.querySelectorAll("td").forEach(td => {
