@@ -41,7 +41,7 @@ class Formatter:
         try:
             import xlsxwriter
         except ImportError:
-            raise RuntimeError("To use this method, you need to install the xlsxwriter library. Run the command: pip install xlsxwriter")
+            raise RuntimeError("To use this method, you need to install the xlsxwriter library. Run the command: pip install ﻿XlsxWriter==3.2.0")
 	
         workbook = xlsxwriter.Workbook(f'{self.filename}.xlsx')
         worksheet = workbook.add_worksheet()
