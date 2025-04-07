@@ -1,5 +1,4 @@
 import csv
-import xlsxwriter
 
 
 def try_to_int(value: any):
@@ -39,6 +38,11 @@ class Formatter:
         return f"{self.filename}.csv"
 
     def to_excel(self) -> str:  # path to file
+        try:
+            import xlsxwriter
+        except ImportError:
+            raise RuntimeError("To use this method, you need to install the xlsxwriter library. Run the command: pip install xlsxwriter")
+	
         workbook = xlsxwriter.Workbook(f'{self.filename}.xlsx')
         worksheet = workbook.add_worksheet()
 
