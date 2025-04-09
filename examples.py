@@ -25,7 +25,6 @@ for user in users:
                                        RowValue(value=Url(url=user['Телеграм'], value='Телеграм'), color='#00FFFF')]))
 
 
-
 f = Formatter(headers=users_header_rows, rows=users_rows, path_to_file_for_save_without_extension='users')
 print('create csv', f.to_csv())
 print('create html', f.to_html_table())

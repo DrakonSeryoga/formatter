@@ -50,11 +50,10 @@ class TableRow:
         self.rows: Optional[list[RowValue]] = []
 
     def add(self, *rows: RowValue) -> 'TableRow':
-        if isinstance(rows, Iterable):
-            for i in rows:
-                self.rows.append(i)
-        else:
-            self.rows.append(*rows)
+        for i in rows:
+            if type(i) != RowValue:
+                raise TypeError(f'Expected type RowValue, received {type(i)}')
+            self.rows.append(i)
 
         return self
 
