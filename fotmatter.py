@@ -69,14 +69,21 @@ class Formatter:
         self.rows: list[TableRow] = rows
         self.filename = path_to_file_for_save_without_extension
         self.delimiter = delimiter
+        for row in self.rows:
+            if len(headers.rows) != len(row.rows):
+                raise IndexError(f"len headers ({len(headers.rows)}) != len rows ({len(row.rows)}). \n{headers}\n\n{row}")
 
     def to_csv(self) -> str:  # path to file
         with open(f"{self.filename}.csv", 'w', encoding="utf-8") as f:
             write = csv.writer(f, delimiter=self.delimiter, )
             write.writerow([r.value for r in self.headers.rows])
             for row in self.rows:
-                row = [str(i.value) for i in row.rows]
-                write.writerow(row)
+                _rows = []
+                for _row in row.rows:
+                    if type(_row.value) == Url:
+                        _row.value = _row.value.url
+                    _rows.append(_row.value)
+                write.writerow(_rows)
 
         return f"{self.filename}.csv"
 
@@ -103,6 +110,9 @@ class Formatter:
             for index, value in enumerate(row.rows):
                 current_len = column_length.get(index, 0)
                 column_length[index] = max(current_len, len(str(value.value)))
+
+                if type(value.value) == Url:
+                    value.value = value.value.url
 
                 if is_int(value=value.value):
                     number_format = workbook.add_format({'num_format': '0'})
