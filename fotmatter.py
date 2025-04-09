@@ -1,7 +1,7 @@
 import csv
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, Iterable
 
 
 def try_to_int(value: any):
@@ -29,8 +29,17 @@ class Color(Enum):
 
 
 @dataclass
+class Url:
+    url: str
+    value: str
+
+    def __str__(self):
+        return f'<a href="{self.url}">{self.value}</a>'
+
+
+@dataclass
 class RowValue:
-    value: Union[str, int, bool, float]
+    value: Union[str, int, bool, float, Url]
     color: Optional[Union[Color, str]] = None
     tooltip: Optional[Union[str, int, bool, float]] = None
     tooltip_color: Optional[Union[Color, str]] = None
@@ -41,10 +50,15 @@ class TableRow:
         self.rows: Optional[list[RowValue]] = []
 
     def add(self, *rows: RowValue):
-        self.rows.append(*rows)
+        if isinstance(rows, Iterable):
+            for i in rows:
+                self.rows.append(i)
+        else:
+            self.rows.append(*rows)
 
     def __repr__(self):
         return f"{self.rows}"
+
 
 class Formatter:
     def __init__(self, headers: TableRow, rows: list[TableRow], path_to_file_for_save_without_extension: str,
@@ -68,8 +82,9 @@ class Formatter:
         try:
             import xlsxwriter
         except ImportError:
-            raise RuntimeError("To use this method, you need to install the xlsxwriter library. Run the command: pip install XlsxWriter==3.2.0")
-	
+            raise RuntimeError(
+                "To use this method, you need to install the xlsxwriter library. Run the command: pip install XlsxWriter==3.2.0")
+
         workbook = xlsxwriter.Workbook(f'{self.filename}.xlsx')
         worksheet = workbook.add_worksheet()
 
@@ -102,7 +117,9 @@ class Formatter:
         return f"{self.filename}.xlsx"
 
     def to_html_table(self) -> str:  # path to file
-        table_headers = '\n'.join([f'<th style="color: {'#fff' if el.color is None else el.color if isinstance(el.color, str) else el.color.value}" onclick="sortTable({i})"><p id="H_{i}">{el.value}</p></th>' for i,el in enumerate(self.headers.rows)])
+        table_headers = '\n'.join([
+                                      f'<th style="color: {'#fff' if el.color is None else el.color if isinstance(el.color, str) else el.color.value}" onclick="sortTable({i})"><p id="H_{i}">{el.value}</p></th>'
+                                      for i, el in enumerate(self.headers.rows)])
         table_rows = ""
         tooltip_js_strings = ""
         for i, header_element in enumerate(self.headers.rows):
@@ -122,9 +139,8 @@ class Formatter:
     allowHTML: true,
     placement: 'top'
 });\n"""
-                table_row += f'<td color="{'#fff' if element.color is None else (element.color if isinstance(element.color, str) else element.color.value) }"><p id="R_{i}_{_i}">{element.value}</td>\n'
+                table_row += f'<td color="{'#fff' if element.color is None else (element.color if isinstance(element.color, str) else element.color.value)}"><p id="R_{i}_{_i}">{element.value}</td>\n'
             table_rows += f"<tr>{table_row}</tr>\n"
-
 
         with open(f"{self.filename}.html", 'w', encoding='utf-8') as f:
             html_tamplate = """<!DOCTYPE html>
@@ -135,7 +151,7 @@ class Formatter:
 	<title>Таблица</title>
 	<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale.css"/>
 <style>
-td,th{border:1px solid #e6c200}.popup,table{white-space:nowrap}.popup,body,main{color:#fff}body{background-color:#1e1e2f}table{margin:0 auto;border-collapse:collapse;box-shadow:0 0 10px #e6c200}th{position:sticky;top:0;background-color:#e6c200;color:#1e1e2f;padding:5px;cursor:pointer}td{padding:10px;text-align:center}tr:nth-child(2n){background-color:#2a2a3b}tr:nth-child(odd){background-color:#3a3a4f}tr:hover{background-color:#55557a}.popup{position:fixed;top:50px;right:25px;transform:translate(-50%,-50%);background-color:#3cc;padding:10px 20px;border-radius:5px;display:none;z-index:1;font-size:20px}
+td,th{border:1px solid #e6c200}a{color:#fff}.popup,table{white-space:nowrap}.popup,body,main{color:#fff}body{background-color:#1e1e2f}table{margin:0 auto;border-collapse:collapse;box-shadow:0 0 10px #e6c200}th{position:sticky;top:0;background-color:#e6c200;color:#1e1e2f;padding:5px;cursor:pointer}td{padding:10px;text-align:center}tr:nth-child(2n){background-color:#2a2a3b}tr:nth-child(odd){background-color:#3a3a4f}tr:hover{background-color:#55557a}.popup{position:fixed;top:50px;right:25px;transform:translate(-50%,-50%);background-color:#3cc;padding:10px 20px;border-radius:5px;display:none;z-index:1;font-size:20px}
 </style>
 </head>
 <body>
@@ -160,19 +176,19 @@ td,th{border:1px solid #e6c200}.popup,table{white-space:nowrap}.popup,body,main{
         const table = document.getElementById("sortableTable");
         const tbody = table.querySelector("tbody");
         const rows = Array.from(tbody.rows);
-        
+
         const isAscending = sortDirection[colIndex] = !sortDirection[colIndex];
-        
+
         rows.sort((rowA, rowB) => {
             let cellA = rowA.cells[colIndex].innerText.trim();
             let cellB = rowB.cells[colIndex].innerText.trim();
-            
+
             if (!isNaN(cellA) && !isNaN(cellB)) {
                 return isAscending ? cellA - cellB : cellB - cellA;
             }
             return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
         });
-        
+
         rows.forEach(row => tbody.appendChild(row));
     }
 

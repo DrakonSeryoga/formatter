@@ -1,4 +1,4 @@
-from fotmatter import Formatter, TableRow, RowValue, Color
+from fotmatter import Formatter, TableRow, RowValue, Color, Url
 import random
 
 
@@ -13,7 +13,7 @@ rows_result = []
 for row in rows:
     _row = TableRow()
     for element in row:
-        _row.add(RowValue(value=element, tooltip=element, color=random.choice(list(Color))))
+        _row.add(RowValue(value=Url(url="https://google.com/", value=element), tooltip=element, color=random.choice(list(Color))))
     rows_result.append(_row)
 
 f = Formatter(headers=headers_rows, rows=rows_result, path_to_file_for_save_without_extension='transactions')
