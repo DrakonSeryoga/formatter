@@ -31,10 +31,10 @@ class Color(Enum):
 @dataclass
 class Url:
     url: str
-    value: str
+    value: Union[str, float, int, bool]
 
     def __str__(self):
-        return f'<a href="{self.url}">{self.value}</a>'
+        return f'<a style="color: inherit" href="{self.url}">{self.value}</a>'
 
 
 @dataclass
@@ -49,12 +49,14 @@ class TableRow:
     def __init__(self):
         self.rows: Optional[list[RowValue]] = []
 
-    def add(self, *rows: RowValue):
+    def add(self, *rows: RowValue) -> 'TableRow':
         if isinstance(rows, Iterable):
             for i in rows:
                 self.rows.append(i)
         else:
             self.rows.append(*rows)
+
+        return self
 
     def __repr__(self):
         return f"{self.rows}"
@@ -123,6 +125,8 @@ class Formatter:
         table_rows = ""
         tooltip_js_strings = ""
         for i, header_element in enumerate(self.headers.rows):
+            if not header_element.tooltip:
+                continue
             tooltip_js_strings += f"""tippy('#H_{i}', """ + """{
             interactive: true,
             content: """ + f""" '<span style="color: {'#fff' if header_element.tooltip_color is None else header_element.tooltip_color if isinstance(header_element.tooltip_color, str) else header_element.tooltip_color.value};">{header_element.tooltip}</span>' """ + """,
@@ -135,11 +139,11 @@ class Formatter:
                 if element.tooltip is not None:
                     tooltip_js_strings += f"""tippy('#R_{i}_{_i}', """ + """{
     interactive: true,
-    content: """ + f""" '<span style="color: {'#fff' if element.tooltip_color is None else (element.tooltip_color if isinstance(element.tooltip_color, str) else element.tooltip_color.value)};">{element.tooltip}</span>' """ + """,
+    content: """ + f""" `<span style="color: {'#fff' if element.tooltip_color is None else (element.tooltip_color if isinstance(element.tooltip_color, str) else element.tooltip_color.value)};">{element.tooltip}</span>` """ + """,
     allowHTML: true,
     placement: 'top'
 });\n"""
-                table_row += f'<td color="{'#fff' if element.color is None else (element.color if isinstance(element.color, str) else element.color.value)}"><p id="R_{i}_{_i}">{element.value}</td>\n'
+                table_row += f'<td><p style="color: {'#fff' if element.color is None else (element.color if isinstance(element.color, str) else element.color.value)}" id="R_{i}_{_i}">{element.value}</p></td>\n'
             table_rows += f"<tr>{table_row}</tr>\n"
 
         with open(f"{self.filename}.html", 'w', encoding='utf-8') as f:
@@ -151,7 +155,7 @@ class Formatter:
 	<title>Таблица</title>
 	<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale.css"/>
 <style>
-td,th{border:1px solid #e6c200}a{color:#fff}.popup,table{white-space:nowrap}.popup,body,main{color:#fff}body{background-color:#1e1e2f}table{margin:0 auto;border-collapse:collapse;box-shadow:0 0 10px #e6c200}th{position:sticky;top:0;background-color:#e6c200;color:#1e1e2f;padding:5px;cursor:pointer}td{padding:10px;text-align:center}tr:nth-child(2n){background-color:#2a2a3b}tr:nth-child(odd){background-color:#3a3a4f}tr:hover{background-color:#55557a}.popup{position:fixed;top:50px;right:25px;transform:translate(-50%,-50%);background-color:#3cc;padding:10px 20px;border-radius:5px;display:none;z-index:1;font-size:20px}
+td,th{border:1px solid #e6c200}p{margin:0}a{color:#fff}.popup,table{white-space:nowrap}.popup,body,main{color:#fff}body{background-color:#1e1e2f}table{margin:0 auto;border-collapse:collapse;box-shadow:0 0 10px #e6c200}th{position:sticky;top:0;background-color:#e6c200;color:#1e1e2f;padding:5px;cursor:pointer}td{padding:10px;text-align:center}tr:nth-child(2n){background-color:#2a2a3b}tr:nth-child(odd){background-color:#3a3a4f}tr:hover{background-color:#55557a}.popup{position:fixed;top:50px;right:25px;transform:translate(-50%,-50%);background-color:#3cc;padding:10px 20px;border-radius:5px;display:none;z-index:1;font-size:20px}
 </style>
 </head>
 <body>
@@ -213,7 +217,8 @@ td,th{border:1px solid #e6c200}a{color:#fff}.popup,table{white-space:nowrap}.pop
 		}, 2000); // всплывашка исчезнет через 2 секунды
 	}
 </script>
-""" + f"""<script>{tooltip_js_strings}</script>
+""" + f"""<script>
+{tooltip_js_strings}</script>
 </body>
 </html>"""
             f.write(html_tamplate)
